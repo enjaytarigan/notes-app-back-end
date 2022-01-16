@@ -27,9 +27,9 @@ const init = async () => {
     },
   });
 
-  await server.register({
+  await server.register([{
     plugin: Jwt,
-  });
+  }]);
 
   await server.auth.strategy('notesapp_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN,
