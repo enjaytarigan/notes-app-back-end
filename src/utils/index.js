@@ -5,6 +5,7 @@ const mapDBToModel = (note) => ({
   tags: note.tags,
   createdAt: note.created_at,
   updatedAt: note.updated_at,
+  username: note.username,
 });
 
 module.exports = { mapDBToModel };

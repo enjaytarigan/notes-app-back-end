@@ -6,8 +6,9 @@ const NotFoundError = require('../../exceptions/NotFoundError');
 const { mapDBToModel } = require('../../utils');
 
 class NotesService {
-  constructor() {
+  constructor(collaborationsService) {
     this._pool = new Pool();
+    this._collaborationService = collaborationsService;
   }
 
   async addNote({
@@ -36,7 +37,7 @@ class NotesService {
 
   async getNotes(owner) {
     const query = {
-      text: 'SELECT * FROM notes WHERE owner = $1',
+      text: 'SELECT notes.* FROM notes LEFT JOIN collaborations ON notes.id = collaborations.note_id WHERE notes.owner = $1 OR collaborations.user_id = $1 GROUP BY notes.id',
       values: [owner],
     };
 
@@ -47,7 +48,7 @@ class NotesService {
 
   async getNoteById(id) {
     const query = {
-      text: 'SELECT * FROM notes WHERE id = $1',
+      text: 'SELECT notes.*, users.username FROM notes LEFT JOIN users ON notes.owner = users.id WHERE notes.id = $1',
       values: [id],
     };
 
@@ -103,6 +104,24 @@ class NotesService {
 
     if (note.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+  }
+
+  async verifyNoteAccess(noteId, userId) {
+    try {
+      await this.verifyNoteOwner(noteId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      // eslint-disable-next-line no-useless-catch
+      try {
+        await this._collaborationService.verifyCollaborator(noteId, userId);
+      // eslint-disable-next-line no-shadow
+      } catch (error) {
+        throw error;
+      }
     }
   }
 }
