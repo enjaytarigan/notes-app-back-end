@@ -1,5 +1,6 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
+const AuthorizationError = require('../../exceptions/AuthorizationError');
 const InvariantError = require('../../exceptions/InvariantError');
 
 class CollaborationsService {
@@ -46,7 +47,7 @@ class CollaborationsService {
     const result = await this._pool.query(query);
 
     if (result.rows.length === 0) {
-      throw new InvariantError('Kolaborasi gagal diverifikasi');
+      throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
   }
 }
