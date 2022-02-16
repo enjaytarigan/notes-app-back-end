@@ -2,3 +2,4 @@ node_modules
 notes-app-api.pem
 .env
 .prod.env
+src/api/uploads/file/
