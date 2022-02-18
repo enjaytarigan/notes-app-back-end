@@ -4,8 +4,9 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 const InvariantError = require('../../exceptions/InvariantError');
 
 class CollaborationsService {
-  constructor() {
+  constructor(cacheServcice) {
     this._pool = new Pool();
+    this._cacheService = cacheServcice;
   }
 
   async addCollaboration(noteId, userId) {
@@ -21,7 +22,7 @@ class CollaborationsService {
     if (result.rows.length === 0) {
       throw new InvariantError('Kolaborasi Gagal ditambahkan');
     }
-
+    await this._cacheService.delete(`notes:${userId}`);
     return result.rows[0].id;
   }
 
@@ -36,6 +37,7 @@ class CollaborationsService {
     if (result.rows.length === 0) {
       throw new InvariantError('Kolaborasi gagal dihapus');
     }
+    await this._cacheService.delete(`notes:${userId}`);
   }
 
   async verifyCollaborator(noteId, userId) {
